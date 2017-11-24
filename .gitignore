@@ -27,3 +27,12 @@ target/
 #temp file
 
 *.log
+*.cache
+*.diff
+*.path
+*.tmp
+
+
+#system ignore
+.DS_Store
+Thumbs.db
