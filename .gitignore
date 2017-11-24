@@ -1,0 +1,29 @@
+#class file
+*.class
+
+#package file
+*.war
+*.ear
+
+#kdiff3
+*.orig
+
+#target
+target/
+
+#eclipse ignore
+.settings/
+.project
+.classpath
+
+#idea
+
+.idea/
+/idea/
+*.ipr
+*.iml
+*.iws
+
+#temp file
+
+*.log
