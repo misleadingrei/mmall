@@ -6,6 +6,7 @@ import com.mmall.common.TokenCache;
 import com.mmall.dao.UserMapper;
 import com.mmall.pojo.User;
 import com.mmall.util.MD5Util;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.mmall.service.IUserService;
@@ -163,10 +164,93 @@ public class UserServiceImpl implements IUserService{
         {
             // non-repetable string -used for tokens
             String forgetToken = UUID.randomUUID().toString();
-            TokenCache.setKey("token_"+username,forgetToken);
+            TokenCache.setKey(TokenCache.TOKEN_PREFIX+username,forgetToken);
 
             return ServerResponse.createBySuccessData(forgetToken);
         }
         return ServerResponse.createByErrorMsg("answer is incorrect");
+    }
+    /*
+          gorget_rest_password impl
+          forget_token is a user commit token for latter compare
+     */
+    public ServerResponse<String> forgetResetPassword(String username ,String passwordNew,String forgetToken){
+        if(StringUtils.isBlank(forgetToken))
+            return ServerResponse.createByErrorMsg("emtpy token");
+        // because we use TokenCache.TOKEN_PREFIX+username as forgetToken here,
+        // once user is blank token will be only TokenCache.TOKEN_PREFIX
+        // it is not acceptable
+        ServerResponse validResponse = this.checkValid(username,Const.USERNAME);
+        if(validResponse.isSuccess())
+            // user does not existed
+        {
+            return ServerResponse.createByErrorMsg("username error");
+        }
+
+        String token = TokenCache.getKey(TokenCache.TOKEN_PREFIX+username);
+        if(StringUtils.isBlank(token))
+        {
+            return ServerResponse.createByErrorMsg("wrong forget token or expired token");
+        }
+        if(forgetToken.equals(token))
+        {
+            String md5Password = MD5Util.MD5EncodeUtf8(passwordNew);
+            int rowCount =userMapper.updatemd5PasswordByUsername(username,md5Password);
+
+            if(rowCount>0)
+                return ServerResponse.createBySuccessrMsg("modify successfully");
+            else
+                return ServerResponse.createByErrorMsg("modify failed");
+        }
+        else
+        {
+            return ServerResponse.createByErrorMsg("wrong token please please renew token");
+        }
+    }
+    /*
+            login reset passsword
+     */
+    public ServerResponse<String>  resetPassword(String passwordOld,String passwordNew,User user){
+          //must check passwordOld with user
+        int resultCount = userMapper.checkPassword(MD5Util.MD5EncodeUtf8(passwordOld),user.getId());
+        //old password incorrect
+        if(resultCount==0)
+            return ServerResponse.createByErrorMsg("incorrect old password");
+        user.setPassword(MD5Util.MD5EncodeUtf8(passwordNew));
+
+        resultCount = userMapper.updateByPrimaryKeySelective(user);
+
+        if(resultCount==0)
+            return ServerResponse.createByErrorMsg("update password failed");
+
+        return ServerResponse.createBySuccessrMsg("update password successfully");
+
+    }
+   /*
+        update  info impl
+    */
+    public ServerResponse<User> updateUserInfo(User user){
+             //username can't be update and email need to bc checked
+        //check email use checkEmailByUserId to ensure the updated email is not used
+        //by other users
+        int resultCount = userMapper.checkEmailByUserId(user.getId(),user.getEmail());
+        if(resultCount>0){
+           return ServerResponse.createByErrorMsg("email has existed please change you email");
+        }
+
+        //use this only for update user because we can't update userName
+        User updateUser = new User();
+        //set update user don't update update_time because it is implemented in the db
+        updateUser.setId(user.getId());
+        updateUser.setPassword(user.getPassword());
+        updateUser.setAnswer(user.getAnswer());
+        updateUser.setEmail(user.getEmail());
+        updateUser.setPhone(user.getPhone());
+
+
+        resultCount=userMapper.updateByPrimaryKeySelective(user);
+        if(resultCount>0)
+            return ServerResponse.createBySuccess("update succeed",updateUser);
+        return ServerResponse.createByErrorMsg("failed to update info");
     }
 }

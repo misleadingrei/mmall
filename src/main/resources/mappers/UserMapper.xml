@@ -780,4 +780,24 @@
     AND  question=#{question}
     AND  answer=#{answer}
   </select>
-</mapper>
+  
+  <update id="updatemd5PasswordByUsername"   parameterType="map">
+    UPDATE mmall_user
+    SET password=#{md5Password},update_time=now()
+    WHERE  username = #{username}
+  </update>
+
+  <select id="checkPassword" resultType="int" parameterType="map">
+    SELECT count(1) from mmall_user
+    where Id=#{userId}
+    AND password=#{md5Password}
+  </select>
+  
+  <select id="checkEmailByUserId" resultType="int" parameterType="int">
+  SELECT count(1) from mmall_user
+  where email=#{email}
+  AND  Id!=#{userId}
+  </select>
+
+
+ </mapper>

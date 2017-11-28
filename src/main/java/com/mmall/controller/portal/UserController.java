@@ -3,6 +3,7 @@ package com.mmall.controller.portal;
 import com.mmall.common.Const;
 import com.mmall.common.ServerResponse;
 import com.mmall.pojo.User;
+import com.mmall.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,8 +45,6 @@ public class UserController {
                 ServerResponse<String> response =  iUserServiceimpl.logout(session);
                 return response;
     }
-
-
 
 
     /*
@@ -97,6 +96,45 @@ public class UserController {
                 return iUserServiceimpl.forgetCheckAnswer(username,question,answer);
     }
     /*
-           forget
+           forget_reset_password controller
      */
+    @RequestMapping(value = "forget_reset_password.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<String> forgetResetPassword(String username ,String passwordNew,String forgetToken){
+               return iUserServiceimpl.forgetResetPassword(username,passwordNew,forgetToken);
+    }
+    /*
+         login reset passsword controller
+     */
+    @RequestMapping(value = "reset_password.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse<String>  resetPassword(String passwordOld,String passwordNew,HttpSession session){
+            User user = (User) session.getAttribute(Const.CURRENT_USER);
+           if(user==null){
+               return ServerResponse.createByErrorMsg("user not login ");
+           }
+           return iUserServiceimpl.resetPassword(passwordOld,passwordNew,user);
+
+    }
+    /*
+          update info controller
+     */
+    @RequestMapping(value = "update_info.do",method = RequestMethod.GET)
+    @ResponseBody
+    public ServerResponse updateUserInfo (HttpSession session ,User user){
+        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+        if(currentUser==null){
+            return ServerResponse.createByErrorMsg("user not login ");
+        }
+        // copy current user id in the session to the user we get
+        //id and username cant' be updated so we replace them in the update user
+        user.setId(currentUser.getId());
+        user.setUsername(currentUser.getUsername());
+        ServerResponse<User> response=iUserServiceimpl.updateUserInfo(user);
+        if(response.isSuccess())
+            session.setAttribute(Const.CURRENT_USER,response.getData());
+        return response;
+
+    }
+
 }
