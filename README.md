@@ -1,1 +1,1 @@
-mmall_learningtouch
+mmall_learning
