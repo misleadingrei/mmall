@@ -1,6 +1,7 @@
 package com.mmall.controller.portal;
 
 import com.mmall.common.Const;
+import com.mmall.common.ResponseCode;
 import com.mmall.common.ServerResponse;
 import com.mmall.pojo.User;
 import com.mmall.util.MD5Util;
@@ -15,6 +16,10 @@ import javax.servlet.http.HttpSession;
 
 /**
  * Created by misleadingrei on 11/26/17.
+ */
+
+/*
+    attention : session will not be passed th service
  */
 @Controller
 @RequestMapping("/user/")
@@ -38,7 +43,7 @@ public class UserController {
        user logout
      */
 
-    @RequestMapping(value="logout.do",method= RequestMethod.GET)
+    @RequestMapping(value="logout.do",method= RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String> logout(HttpSession session)
     {
@@ -51,7 +56,7 @@ public class UserController {
           register
      */
 
-    @RequestMapping(value="register.do",method= RequestMethod.GET)
+    @RequestMapping(value="register.do",method= RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String> register(User user)
     {
@@ -61,18 +66,22 @@ public class UserController {
     /*
         checkVaild
      */
-    @RequestMapping(value="checkVaild.do",method= RequestMethod.GET)
+    @RequestMapping(value="checkVaild.do",method= RequestMethod.POST)
     @ResponseBody public ServerResponse<String> checkValid(String str,String type) {return iUserServiceimpl.checkValid(str,type);}
 
 
     /*
         get_user_info
      */
-    @RequestMapping(value = "get_user_info.do",method = RequestMethod.GET)
+    @RequestMapping(value = "get_user_info.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<User> getUserInfo(HttpSession session)
     {
-         return iUserServiceimpl.getUserInfo(session);
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        if(user!=null)
+            return ServerResponse.createBySuccessData(user);
+        else
+            return ServerResponse.createByErrorMsg("user not login ");
     }
 
 
@@ -80,7 +89,7 @@ public class UserController {
        select username by username
        when forget password program uses password question
     */
-    @RequestMapping(value = "forget_get_question.do",method = RequestMethod.GET)
+    @RequestMapping(value = "forget_get_question.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String> selectQuestionByUsername(String username){
             return iUserServiceimpl.getQuestionByUsername(username);
@@ -89,7 +98,7 @@ public class UserController {
     /*
            we store tokens in the String in the ServerResponse<String> for latter reset use
      */
-    @RequestMapping(value = "forget_check_answer.do",method = RequestMethod.GET)
+    @RequestMapping(value = "forget_check_answer.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String> forgetCheckAnswer (String username ,String question ,String answer)
     {
@@ -98,7 +107,7 @@ public class UserController {
     /*
            forget_reset_password controller
      */
-    @RequestMapping(value = "forget_reset_password.do",method = RequestMethod.GET)
+    @RequestMapping(value = "forget_reset_password.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String> forgetResetPassword(String username ,String passwordNew,String forgetToken){
                return iUserServiceimpl.forgetResetPassword(username,passwordNew,forgetToken);
@@ -106,7 +115,7 @@ public class UserController {
     /*
          login reset passsword controller
      */
-    @RequestMapping(value = "reset_password.do",method = RequestMethod.GET)
+    @RequestMapping(value = "reset_password.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<String>  resetPassword(String passwordOld,String passwordNew,HttpSession session){
             User user = (User) session.getAttribute(Const.CURRENT_USER);
@@ -119,9 +128,9 @@ public class UserController {
     /*
           update info controller
      */
-    @RequestMapping(value = "update_info.do",method = RequestMethod.GET)
+    @RequestMapping(value = "update_info.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse updateUserInfo (HttpSession session ,User user){
+    public ServerResponse<User> updateUserInfo (HttpSession session ,User user){
         User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
         if(currentUser==null){
             return ServerResponse.createByErrorMsg("user not login ");
@@ -134,6 +143,20 @@ public class UserController {
         if(response.isSuccess())
             session.setAttribute(Const.CURRENT_USER,response.getData());
         return response;
+
+    }
+    /*
+       if this controller is called when user does not login
+       user will be required to login at first
+     */
+    @RequestMapping(value = "get_info.do",method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse<User> getInformation (HttpSession session){
+        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+        if(currentUser==null){
+            return ServerResponse.createByErrorCodeAndMsg(ResponseCode.NEED_LOGIN.getCode(),"need force login");
+        }
+        return iUserServiceimpl.getInformation(currentUser.getId());
 
     }
 

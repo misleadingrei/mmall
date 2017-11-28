@@ -13,10 +13,10 @@ public interface IUserService {
     ServerResponse<String> logout(HttpSession session);
     ServerResponse<String> register(User user);
     ServerResponse<String> checkValid(String str ,String type);
-    ServerResponse<User> getUserInfo(HttpSession session);
     ServerResponse<String> getQuestionByUsername(String username);
     ServerResponse<String> forgetCheckAnswer (String username ,String question ,String answer);
     ServerResponse<String> forgetResetPassword(String username ,String passwordNew,String token);
     ServerResponse<String>  resetPassword(String passwordOld,String passwordNew,User user);
     ServerResponse<User> updateUserInfo (User user);
+    ServerResponse<User> getInformation (Integer userId);
 }

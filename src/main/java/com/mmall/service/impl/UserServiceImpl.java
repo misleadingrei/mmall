@@ -123,18 +123,6 @@ public class UserServiceImpl implements IUserService{
                    return ServerResponse.createByErrorMsg("wrong args");
     }
 
-    /*
-           get user info
-
-     */
-    public ServerResponse<User> getUserInfo(HttpSession session)
-    {
-           User user = (User)session.getAttribute(Const.CURRENT_USER);
-           if(user!=null)
-           return ServerResponse.createBySuccessData(user);
-           else
-           return ServerResponse.createByErrorMsg("user not login ");
-    }
 
     /*
         get question by username
@@ -252,5 +240,15 @@ public class UserServiceImpl implements IUserService{
         if(resultCount>0)
             return ServerResponse.createBySuccess("update succeed",updateUser);
         return ServerResponse.createByErrorMsg("failed to update info");
+    }
+
+    public ServerResponse<User> getInformation (Integer userId){
+        User user = userMapper.selectByPrimaryKey(userId);
+        if(user==null)
+            return ServerResponse.createByErrorMsg("need login");
+        //set password to empty to ensure safety
+        user.setPassword(StringUtils.EMPTY);
+
+        return ServerResponse.createBySuccessData(user);
     }
 }
