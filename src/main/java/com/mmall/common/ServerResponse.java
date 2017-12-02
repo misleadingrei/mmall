@@ -102,7 +102,7 @@ public class ServerResponse<T> implements Serializable {
     }
 
    //other type of ERRORmsg ,see ResponseCode
-   public  static  <T> ServerResponse createByErrorCodeAndMsg(int errorCode ,String errorMsg)
+   public  static  <T> ServerResponse<T> createByErrorCodeAndMsg(int errorCode ,String errorMsg)
    {
        return new ServerResponse<T>(errorCode,errorMsg);
    }

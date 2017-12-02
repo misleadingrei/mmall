@@ -20,7 +20,7 @@ import javax.servlet.http.HttpSession;
 @RequestMapping ("/manager/user")
 public class UserManagerController {
 
-    @Autowired IUserService iUserServiceimpl;
+    @Autowired private IUserService iUserServiceimpl;
 
 
     @RequestMapping(value ="login.do",method = RequestMethod.POST)

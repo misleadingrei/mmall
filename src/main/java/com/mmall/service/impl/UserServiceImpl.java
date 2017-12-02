@@ -20,7 +20,7 @@ import java.util.UUID;
 /*
    implement UserService Interface
  */
-@Service("iUserServiceImpl")
+@Service("IUserService")
 public class UserServiceImpl implements IUserService{
 
     @Autowired
@@ -29,9 +29,9 @@ public class UserServiceImpl implements IUserService{
     /*
          login impl
      */
-    public ServerResponse<User> login (String userName, String password)
+    public ServerResponse<User> login (String username, String password)
     {
-        int resultCount = userMapper.checkUserName(userName);
+        int resultCount = userMapper.checkUserName(username);
         // user doesn't exit
         if(resultCount==0)
         {
@@ -39,10 +39,11 @@ public class UserServiceImpl implements IUserService{
 
         }
 
-        //todo passowrd md5
-        String MD5password = MD5Util.MD5EncodeUtf8(password);
 
-            User user = userMapper.selectLogin(userName,password);
+        //todo passowrd md5
+        String md5password = MD5Util.MD5EncodeUtf8(password);
+
+            User user = userMapper.selectLogin(username,md5password);
             //wrong password
             if(user==null)
                 return ServerResponse.createByErrorMsg("wrong password");
@@ -159,7 +160,7 @@ public class UserServiceImpl implements IUserService{
         return ServerResponse.createByErrorMsg("answer is incorrect");
     }
     /*
-          gorget_rest_password impl
+          forget_rest_password impl
           forget_token is a user commit token for latter compare
      */
     public ServerResponse<String> forgetResetPassword(String username ,String passwordNew,String forgetToken){
@@ -183,7 +184,7 @@ public class UserServiceImpl implements IUserService{
         if(forgetToken.equals(token))
         {
             String md5Password = MD5Util.MD5EncodeUtf8(passwordNew);
-            int rowCount =userMapper.updatemd5PasswordByUsername(username,md5Password);
+            int rowCount =userMapper.updatePasswordByUsername(username,md5Password);
 
             if(rowCount>0)
                 return ServerResponse.createBySuccessrMsg("modify successfully");
@@ -218,7 +219,7 @@ public class UserServiceImpl implements IUserService{
         update  info impl
     */
     public ServerResponse<User> updateUserInfo(User user){
-             //username can't be update and email need to bc checked
+        //username can't be update and email need to bc checked
         //check email use checkEmailByUserId to ensure the updated email is not used
         //by other users
         int resultCount = userMapper.checkEmailByUserId(user.getId(),user.getEmail());
@@ -250,5 +251,15 @@ public class UserServiceImpl implements IUserService{
         user.setPassword(StringUtils.EMPTY);
 
         return ServerResponse.createBySuccessData(user);
+    }
+
+
+    /*
+         followings are impls of baakend
+     */
+    public ServerResponse<String> checkAdminRole(User user){
+        if(user!=null&&user.getRole().equals(Const.Role.ROLE_ADMIN))
+            return ServerResponse.createBySuccess();
+        return ServerResponse.createByError();
     }
 }

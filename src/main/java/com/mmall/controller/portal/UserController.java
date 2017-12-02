@@ -27,12 +27,12 @@ public class UserController {
     /*
          user login
      */
-    @Autowired IUserService iUserServiceimpl;
+    @Autowired private IUserService iUserServiceimpl;
     @RequestMapping(value="login.do",method= RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<User> login (String userName , String password , HttpSession session)
+    public ServerResponse<User> login (String username , String password , HttpSession session)
     {
-              ServerResponse<User> response =  iUserServiceimpl.login(userName,password);
+              ServerResponse<User> response =  iUserServiceimpl.login(username,password);
               if(response.isSuccess())
               {
                   session.setAttribute(Const.CURRENT_USER,response.getData());
@@ -66,7 +66,7 @@ public class UserController {
     /*
         checkVaild
      */
-    @RequestMapping(value="checkVaild.do",method= RequestMethod.POST)
+    @RequestMapping(value="checkValid.do",method= RequestMethod.POST)
     @ResponseBody public ServerResponse<String> checkValid(String str,String type) {return iUserServiceimpl.checkValid(str,type);}
 
 
@@ -87,7 +87,7 @@ public class UserController {
 
     /*
        select username by username
-       when forget password program uses password question
+       when forget password program uses password question  return answer of the question
     */
     @RequestMapping(value = "forget_get_question.do",method = RequestMethod.POST)
     @ResponseBody
@@ -96,7 +96,7 @@ public class UserController {
     }
 
     /*
-           we store tokens in the String in the ServerResponse<String> for latter reset use
+           we return tokens in the String in the ServerResponse<String> for latter reset use
      */
     @RequestMapping(value = "forget_check_answer.do",method = RequestMethod.POST)
     @ResponseBody
