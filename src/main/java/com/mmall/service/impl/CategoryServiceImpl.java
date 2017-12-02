@@ -41,7 +41,9 @@ public class CategoryServiceImpl implements ICategoryService{
     public ServerResponse updateCategoryName(String newName ,Integer categoryId){
         // args check
         if(categoryId==null|| StringUtils.isBlank(newName))
+        {
             return ServerResponse.createByErrorMsg("wrong arg");
+        }
 
         Category category = new Category();
         category.setParentId(categoryId);
