@@ -3,6 +3,7 @@ package com.mmall.controller.backend;
 import com.mmall.common.Const;
 import com.mmall.common.ResponseCode;
 import com.mmall.common.ServerResponse;
+import com.mmall.pojo.Category;
 import com.mmall.pojo.User;
 import com.mmall.service.ICategoryService;
 import com.mmall.service.IUserService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * Created by misleadingrei on 12/2/17.
@@ -61,6 +63,40 @@ public class CategoryManageController {
         {
             return ServerResponse.createByErrorMsg("not admin and have no privilege");
         }
-        return iCategoryService.upadteCategoryName(newName,categoryId);
+        return iCategoryService.updateCategoryName(newName,categoryId);
+    }
+
+    @RequestMapping("get_child_parallel_category.do")
+    @ResponseBody
+    public ServerResponse<List<Category>> getChildParallelCategory (HttpSession session, @RequestParam(value="categoryId", defaultValue="0") Integer categoryId){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        //check login
+        if(user==null) return ServerResponse.createByErrorCodeAndMsg(ResponseCode.NEED_LOGIN.getCode(),"need login first");
+
+        //check admin
+        if(!iUserService.checkAdminRole(user).isSuccess())
+        //not admin
+        {
+            return ServerResponse.createByErrorMsg("not admin and have no privilege");
+        }
+        //is admin
+        return iCategoryService.getChildParallelCategory(categoryId);
+    }
+
+    @RequestMapping("get_child_parallel_category.do")
+    @ResponseBody
+    public  ServerResponse getCategoryAndDeepChildrenCategory(HttpSession session, @RequestParam(value="categoryId", defaultValue="0") Integer categoryId){
+        User user = (User)session.getAttribute(Const.CURRENT_USER);
+        //check login
+        if(user==null) return ServerResponse.createByErrorCodeAndMsg(ResponseCode.NEED_LOGIN.getCode(),"need login first");
+
+        //check admin
+        if(!iUserService.checkAdminRole(user).isSuccess())
+        //not admin
+        {
+            return ServerResponse.createByErrorMsg("not admin and have no privilege");
+        }
+        //is admin
+        return  iCategoryService.getCategoryAndDeepChildrenCategory(categoryId);
     }
 }

@@ -4,9 +4,15 @@ import com.mmall.common.ServerResponse;
 import com.mmall.dao.CategoryMapper;
 import com.mmall.pojo.Category;
 import com.mmall.service.ICategoryService;
+import com.sun.corba.se.spi.activation.Server;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Created by misleadingrei on 12/2/17.
@@ -15,6 +21,9 @@ import org.springframework.stereotype.Service;
 public class CategoryServiceImpl implements ICategoryService{
     @Autowired
     private CategoryMapper categoryMapper;
+
+    //use this logger when return list is empty see below
+    private Logger logger = LoggerFactory.getLogger(CategoryServiceImpl.class);
 
     /*
          addCategory impls
@@ -56,4 +65,18 @@ public class CategoryServiceImpl implements ICategoryService{
 
 
     }
+
+
+    public ServerResponse  getChildParallelCategory (Integer categoryId){
+        List<Category> list = categoryMapper.selectCategoryChildrenByParentId(categoryId);
+        if(CollectionUtils.isEmpty(list)){
+            logger.info("child of this category is empty");
+        }
+        return ServerResponse.createBySuccessData(list);
+    }
+
+    public ServerResponse getCategoryAndDeepChildrenCategory(Integer categoryId){
+
+    }
+
 }
