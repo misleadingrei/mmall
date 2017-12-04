@@ -9,7 +9,7 @@ import javax.servlet.http.HttpSession;
  * Created by misleadingrei on 11/26/17.
  */
 public interface IUserService {
-    ServerResponse<User> login (String userName, String password);
+    ServerResponse<User> login (String username, String password);
     ServerResponse<String> logout(HttpSession session);
     ServerResponse<String> register(User user);
     ServerResponse<String> checkValid(String str ,String type);

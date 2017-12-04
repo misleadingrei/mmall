@@ -86,4 +86,31 @@ public class Category {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
+
+
+    @Override
+    public boolean equals (Object o)
+    {
+        if(!(o instanceof Category))
+        {
+            return false;
+        }
+        if(!(o.getClass().equals(this.getClass()))){
+           return false;
+        }
+
+        //consider this four factors as main consdier
+        id=((Category) o).getId();
+        parentId=((Category) o).getParentId();
+        name = ((Category) o).getName();
+        status = ((Category) o).getStatus();
+
+        return (id==this.id)&&(parentId==this.parentId)&&(name.equals(this.name))&&(status.equals(this.status));
+
+    }
+
+    @Override
+    public int hashCode(){
+        return id.hashCode()+parentId.hashCode()+name.hashCode()+parentId.hashCode()+status.hashCode();
+    }
 }

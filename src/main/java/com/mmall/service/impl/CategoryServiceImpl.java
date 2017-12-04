@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by misleadingrei on 12/2/17.
@@ -67,8 +69,8 @@ public class CategoryServiceImpl implements ICategoryService{
     }
 
 
-    public ServerResponse  getChildParallelCategory (Integer categoryId){
-        List<Category> list = categoryMapper.selectCategoryChildrenByParentId(categoryId);
+    public ServerResponse  getChildrenParallelCategory (Integer parentId){
+        List<Category> list = categoryMapper.selectCategoryChildrenByParentId(parentId);
         if(CollectionUtils.isEmpty(list)){
             logger.info("child of this category is empty");
         }
@@ -76,7 +78,33 @@ public class CategoryServiceImpl implements ICategoryService{
     }
 
     public ServerResponse getCategoryAndDeepChildrenCategory(Integer categoryId){
+          Set<Category> set= new HashSet<>();
+          return getCategoryAndDeepChildrenCategoryRaw(categoryId,set);
 
+    }
+
+    public ServerResponse getCategoryAndDeepChildrenCategoryRaw (Integer categoryId,Set<Category> set){
+        ServerResponse response = getChildrenParallelCategory(categoryId);
+        List<Category> list = ( List<Category>) response.getData();
+        if(CollectionUtils.isEmpty(list))
+            return ServerResponse.createBySuccessrMsg("end of child");
+        // add list to set for trim
+        set = trimChildCategory(list,set);
+        for(Category category :list){
+            getCategoryAndDeepChildrenCategoryRaw(category.getId(),set);
+        }
+        return ServerResponse.createBySuccessData(set);
+    }
+
+
+    // to impl set unqie
+    //we need to overwrite Category's hashcode() and equals
+    public Set<Category> trimChildCategory(List<Category> list,Set<Category> set){
+        for(Category category :list){
+            if(!set.contains(category))
+                set.add(category);
+        }
+        return set;
     }
 
 }

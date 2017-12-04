@@ -17,7 +17,7 @@ import javax.servlet.http.HttpSession;
  * Created by misleadingrei on 11/28/17.
  */
 @Controller
-@RequestMapping ("/manager/user")
+@RequestMapping ("/manage/user")
 public class UserManagerController {
 
     @Autowired private IUserService iUserServiceimpl;
@@ -25,9 +25,9 @@ public class UserManagerController {
 
     @RequestMapping(value ="login.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<User> login (String userName, String password, HttpSession session)
+    public ServerResponse<User> login (String username, String password, HttpSession session)
     {
-        ServerResponse response=iUserServiceimpl.login(userName,password);
+        ServerResponse response=iUserServiceimpl.login(username,password);
         // login success
         if(response.isSuccess())
         {
@@ -37,7 +37,7 @@ public class UserManagerController {
 
 
             // admin
-            if(Const.Role.ROLE_CUSTOMER==user.getRole())
+            if(Const.Role.ROLE_ADMIN==user.getRole())
             {
                 session.setAttribute(Const.CURRENT_USER,user);
                 return response;

@@ -11,6 +11,6 @@ import java.util.List;
 public interface ICategoryService {
     ServerResponse addCategory(String categoryName, Integer parentId);
     ServerResponse updateCategoryName(String newName ,Integer categoryId);
-    ServerResponse getChildParallelCategory(Integer categoryId);
+    ServerResponse getChildrenParallelCategory(Integer parentId);
     ServerResponse getCategoryAndDeepChildrenCategory(Integer categoryId);
 }

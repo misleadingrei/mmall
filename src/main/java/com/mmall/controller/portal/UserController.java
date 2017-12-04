@@ -22,7 +22,7 @@ import javax.servlet.http.HttpSession;
     attention : session will not be passed th service
  */
 @Controller
-@RequestMapping("/user/")
+@RequestMapping("/user")
 public class UserController {
     /*
          user login

@@ -10,6 +10,7 @@ import com.mmall.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -20,7 +21,7 @@ import java.util.List;
  * Created by misleadingrei on 12/2/17.
  */
 @Controller
-@RequestMapping("manage/category")
+@RequestMapping("/manage/category")
 public class CategoryManageController {
 
     //spring autowired by Tpye prior to by Name
@@ -30,7 +31,7 @@ public class CategoryManageController {
     @Autowired
     private ICategoryService iCategoryService;
 
-    @RequestMapping("add_category.do")
+    @RequestMapping(value="add_category.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse addCategory(HttpSession session,String categoryName,@RequestParam(value="parentId",defaultValue = "0") int parentId){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
@@ -50,7 +51,7 @@ public class CategoryManageController {
     }
 
 
-    @RequestMapping("update_category_name.do")
+    @RequestMapping(value="update_category_name.do",method = RequestMethod.POST)
     @ResponseBody
     public  ServerResponse updateCategoryName(HttpSession session,String newName,Integer categoryId){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
@@ -66,9 +67,9 @@ public class CategoryManageController {
         return iCategoryService.updateCategoryName(newName,categoryId);
     }
 
-    @RequestMapping("get_child_parallel_category.do")
+    @RequestMapping(value="get_children_parallel_category.do",method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<List<Category>> getChildParallelCategory (HttpSession session, @RequestParam(value="categoryId", defaultValue="0") Integer categoryId){
+    public ServerResponse<List<Category>> getChildrenParallelCategory (HttpSession session, @RequestParam(value="parentId", defaultValue="0") Integer parentId){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
         //check login
         if(user==null) return ServerResponse.createByErrorCodeAndMsg(ResponseCode.NEED_LOGIN.getCode(),"need login first");
@@ -80,10 +81,10 @@ public class CategoryManageController {
             return ServerResponse.createByErrorMsg("not admin and have no privilege");
         }
         //is admin
-        return iCategoryService.getChildParallelCategory(categoryId);
+        return iCategoryService.getChildrenParallelCategory(parentId);
     }
 
-    @RequestMapping("get_child_parallel_category.do")
+    @RequestMapping(value="get_category_and_deep_child_category.do",method=RequestMethod.POST)
     @ResponseBody
     public  ServerResponse getCategoryAndDeepChildrenCategory(HttpSession session, @RequestParam(value="categoryId", defaultValue="0") Integer categoryId){
         User user = (User)session.getAttribute(Const.CURRENT_USER);
