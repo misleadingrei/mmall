@@ -1,5 +1,9 @@
 package com.mmall.common;
 
+import com.google.common.collect.Sets;
+
+import java.util.Set;
+
 /**
  * Created by misleadingrei on 11/27/17.
  */
@@ -12,6 +16,35 @@ public class Const {
     }
    public static String USERNAME="USERNAME";
    public static String EMAIL="EMAIL";
+
+    public interface  productListOrderBy{
+        Set<String> PRICE_ASC_DESC= Sets.newHashSet("PRICE_DESC","PRICE_ASC");
+    }
+
+    // use this enum to record sale status
+   public enum ProductStatusEnum{
+       On_SALE("ON_SALE",1);
+
+
+       public String getValue() {
+           return value;
+       }
+
+       public int getCode() {
+           return code;
+       }
+
+        private String value;
+        private int code ;
+
+      ProductStatusEnum(String value ,int code){
+           this.value=value;
+           this.code=code;
+
+       }
+
+
+    }
 
 }
 

@@ -13,9 +13,14 @@ import java.util.List;
  * Created by misleadingrei on 12/7/17.
  */
 public interface IProductService {
+     // backend impls
      ServerResponse insertOrUpdateProduct(Product product);
      ServerResponse setSaleStatus(Integer productId,Integer status);
      ServerResponse<ProductDetailsVo> manageProductDetails(Integer productId);
      ServerResponse<PageInfo> getProductList(int pageNum, int pageSize);
      ServerResponse<PageInfo>  searchProduct (String productName,Integer productId,int pageNum, int pageSize);
+
+     // followings are impls of portal
+     ServerResponse<ProductDetailsVo> getProductDetails(Integer productId);
+     ServerResponse<PageInfo> listProductByKeywordAndCategoryId (String  keyword,Integer categoryId,int pageSize,int pageNum,String orderBy);
 }

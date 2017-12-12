@@ -1,22 +1,27 @@
 package com.mmall.service.impl;
 
+import com.github.orderbyhelper.sqlsource.OrderByDynamicSqlSource;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.mmall.VO.ProductDetailsVo;
 import com.mmall.VO.ProductListVo;
+import com.mmall.common.Const;
 import com.mmall.common.ResponseCode;
 import com.mmall.common.ServerResponse;
 import com.mmall.dao.CategoryMapper;
 import com.mmall.dao.ProductMapper;
 import com.mmall.pojo.Category;
 import com.mmall.pojo.Product;
+import com.mmall.service.ICategoryService;
 import com.mmall.service.IProductService;
 import com.mmall.util.DateTimeUtil;
 import com.mmall.util.PropertiesUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +37,9 @@ public class ProductServiceImpl implements IProductService {
 
     @Autowired
     private CategoryMapper categoryMapper;
+
+    @Autowired
+    private ICategoryService iCategoryService;
 
 
     // this method is used for assemble Product Details VO
@@ -188,5 +196,85 @@ public class ProductServiceImpl implements IProductService {
         PageInfo pageResult = new PageInfo(resultList);
         pageResult.setList(productListVoList);
         return ServerResponse.createBySuccessData(pageResult);
+    }
+
+
+    /*
+          following parts are impls of protal product use
+     */
+    public  ServerResponse<ProductDetailsVo> getProductDetails( Integer productId){
+        if(productId==null) return ServerResponse.createByErrorCodeAndMsg(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getDesc());
+        Product result = productMapper.selectByPrimaryKey(productId);
+        if(result==null) return ServerResponse.createByErrorMsg("product not for sale or  does not exist");
+        if(result.getStatus()!= Const.ProductStatusEnum.On_SALE.getCode())
+            return ServerResponse.createByErrorMsg("product not for sale or  does not exist ");
+        // value object
+        ProductDetailsVo productDetailsVo = this.assembleProductDetailsVo(result);
+
+        return ServerResponse.createBySuccessData(productDetailsVo);
+
+    }
+
+    public ServerResponse<PageInfo> listProductByKeywordAndCategoryId(String keyword,Integer categoryId,int pageNum,int pageSize,String orderBy){
+           //judge the correctness of arugments
+        if(StringUtils.isBlank(keyword)&&categoryId==null)
+            return ServerResponse.createByErrorCodeAndMsg(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getDesc());
+
+        // use this to store all sub category of this category and itself;
+       List<Integer> categoryIdList = new ArrayList<Integer>();
+
+
+
+        if(categoryId!=null){
+            Category category = categoryMapper.selectByPrimaryKey(categoryId);
+            if(category==null&&StringUtils.isBlank(keyword))
+                // if it is no category and keyword is blank,
+               //return empty result
+            {
+                PageHelper.startPage(pageNum,pageSize);
+                List<ProductListVo> listVos = new ArrayList<>();
+                PageInfo pageInfo = new PageInfo(listVos);
+                return ServerResponse.createBySuccessData(pageInfo);
+            }
+        }
+        // now this categoryid is not null
+        categoryIdList=iCategoryService.getCategoryAndDeepChildrenCategory(categoryId).getData();
+
+        // keyword is not blank
+        if(StringUtils.isNotBlank(keyword)){
+            keyword= new StringBuilder().append("%").append(keyword).append("%").toString();
+        }
+        //odered data
+        PageHelper.startPage(pageNum,pageSize);
+
+        //orderBy field not empty
+        if(StringUtils.isNotBlank(orderBy)){
+            if(Const.productListOrderBy.PRICE_ASC_DESC.contains(orderBy));
+            {
+                String[] orderByArray = orderBy.split("_");
+                // parse rule of pageHelper orderBy
+                PageHelper.orderBy(orderByArray[0]+" " +orderByArray[1]);
+
+            }
+        }
+
+
+        //to ensure the sql process is correct
+        List<Product> productList = productMapper.selectByNameAndCategoryIdList(StringUtils.isBlank(keyword)?null:keyword,
+                categoryIdList.size()==0?null:categoryIdList);
+        //assemble product to productListVo
+        List<ProductListVo> productListVoList = Lists.newArrayList();
+        for(Product productItem:productList){
+            productListVoList.add(assembleProductListVo(productItem));
+        }
+        //start pag\ing
+
+        PageInfo pageInfo = new PageInfo(productList);
+        pageInfo.setList(productListVoList);
+
+        return ServerResponse.createBySuccessData(pageInfo);
+
+
+
     }
 }
