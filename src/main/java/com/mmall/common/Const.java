@@ -21,6 +21,16 @@ public class Const {
         Set<String> PRICE_ASC_DESC= Sets.newHashSet("PRICE_DESC","PRICE_ASC");
     }
 
+    public interface  productCheck{
+        int CHECKED=0;
+        int UNCHECKED=1;
+    }
+
+    public interface limitQuantity{
+        int LIMIT_QUANTITY_SUCCESS =0;
+        int LIMIT_QUANTITY_FAILED=1;
+    }
+
     // use this enum to record sale status
    public enum ProductStatusEnum{
        On_SALE("ON_SALE",1);

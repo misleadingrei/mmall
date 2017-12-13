@@ -8,6 +8,7 @@ import com.mmall.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -17,18 +18,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 //beacuse this controller is uesd for portal to get product ,they don't have privileges to modify product
 //which means read-only .so in this controller we don't check access at all.
 @Controller
-@RequestMapping("/product/")
+@RequestMapping("/product")
 public class ProductController {
     @Autowired private IProductService iProductService;
 
 
-    @RequestMapping("details.do")
+    @RequestMapping(value = "details.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<ProductDetailsVo> details (Integer productId){
         return iProductService.getProductDetails(productId);
     }
 
-    @RequestMapping("list.do")
+    @RequestMapping(value = "list.do",method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<PageInfo> list (@RequestParam(value="keyword",required = false) String keyword,
                                           @RequestParam(value="categoryId",required = false) Integer categoryId ,
