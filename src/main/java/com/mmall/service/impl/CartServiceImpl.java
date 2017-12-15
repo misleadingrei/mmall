@@ -125,7 +125,6 @@ public class CartServiceImpl implements ICartService{
                      Cart tempCartForUpdate = new Cart();
                      tempCartForUpdate.setQuantity(buyLimitCount);
                      tempCartForUpdate.setId(cart.getId());
-
                      cartMapper.updateByPrimaryKeySelective(tempCartForUpdate);
                  }
                  cartProductVo.setQuantity(buyLimitCount);
@@ -139,7 +138,7 @@ public class CartServiceImpl implements ICartService{
              //if this product is checked ,it should be added to total price
              if(cartProductVo.getProductCheck().equals(Const.productCheck.CHECKED))
              {
-                 totalPrice.add(cartProductVo.getTotalPrice()));
+                 totalPrice.add(cartProductVo.getTotalPrice());
              }
              cartProductVoList.add(cartProductVo);
          }
@@ -149,6 +148,8 @@ public class CartServiceImpl implements ICartService{
         cartVo.setCartProductVoList(cartProductVoList);
         //set checked status of
         cartVo.setAllChecked(this.getAllCheckStatus(userId));
+
+        return cartVo;
 
     }
 
@@ -161,4 +162,74 @@ public class CartServiceImpl implements ICartService{
 
    }
 
-}
+
+    public ServerResponse<CartVo> update( Integer productId, Integer count,Integer userId){
+        //args judge
+        if(userId==null||productId==null||count==null){
+            return ServerResponse.createByErrorCodeAndMsg(ResponseCode.ILLEGAL_ARGUMENT.getCode(),ResponseCode.ILLEGAL_ARGUMENT.getDesc());
+        }
+        Cart cart = cartMapper.selectByProductIdAndUserId(userId,productId);
+        count+=cart.getQuantity();
+        cart.setQuantity(count);
+        //update cart
+        cartMapper.updateByPrimaryKeySelective(cart);
+
+    // return cartVo wtih limit using getCartVoWithLimit
+    // it should be called at last to ensure limit
+    CartVo cartVo = this.getCartVoWtihLimit(userId);
+    return ServerResponse.createBySuccessData(cartVo);}
+
+
+    //input a string series of productId and splitted by ","
+    public ServerResponse<CartVo> delete( String productIds ,Integer userId) {
+        //args judge
+        if (userId == null || productIds==null) {
+            return ServerResponse.createByErrorCodeAndMsg(ResponseCode.ILLEGAL_ARGUMENT.getCode(), ResponseCode.ILLEGAL_ARGUMENT.getDesc());
+        }
+        cartMapper.deleteByProductIdsAndUserId(productIds,userId);
+
+        // return cartVo wtih limit using getCartVoWithLimit
+        // it should be called at last to ensure limit
+        CartVo cartVo = this.getCartVoWtihLimit(userId);
+        return ServerResponse.createBySuccessData(cartVo);
+    }
+
+    public ServerResponse<CartVo> list(Integer userId){
+        // return cartVo wtih limit using getCartVoWithLimit
+        // it should be called at last to ensure limit
+        CartVo cartVo = this.getCartVoWtihLimit(userId);
+        return ServerResponse.createBySuccessData(cartVo);
+    }
+
+
+    //this method put select or unselect together
+    //use param (selected) in the controller to call DAO
+    public ServerResponse<CartVo> selectOrUnselectAll(Integer userId,Integer checked){
+        //select all the cart link with userId
+       cartMapper.checkOrUncheckProduct(userId,checked);
+
+        // return cartVo wtih limit using getCartVoWithLimit
+        // it should be called at last to ensure limit
+        CartVo cartVo = this.getCartVoWtihLimit(userId);
+        return ServerResponse.createBySuccessData(cartVo);
+    }
+
+
+    public ServerResponse<CartVo> selectOrUnselectAlone(Integer userId,Integer checked,Integer productId){
+        //select all the cart link with userId
+        cartMapper.checkOrUncheckProductAlone(userId,checked,productId);
+
+        // return cartVo wtih limit using getCartVoWithLimit
+        // it should be called at last to ensure limit
+        CartVo cartVo = this.getCartVoWtihLimit(userId);
+        return ServerResponse.createBySuccessData(cartVo);
+    }
+
+
+    public ServerResponse<Integer> getCartProductCount(Integer userId){
+        if(userId==null) return ServerResponse.createBySuccessData(0);
+        return ServerResponse.createBySuccessData(cartMapper.selectCartProductCount(userId));
+    }
+
+    }
+

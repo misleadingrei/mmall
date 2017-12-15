@@ -135,4 +135,39 @@
   <select id="selectProductUncheckStatusByUserId" resultMap="BaseResultMap" parameterType="Integer">
     SELECT count(1) FROM mmall_cart FROM mmall_cart WHERE checked =0 AND  user_id=#{userId}
   </select>
+
+  <delete id="deleteByProductIdsAndUserId" parameterType="map">
+    DELETE FROM  mmall_cart
+    WHERE user_id=#{userId}
+    <if test="productIds!=null">
+      AND product_id IN
+      <foreach collection="productIds" index="index" item="item" open="(" close=")" separator=",">
+        #{item}
+      </foreach>
+    </if>
+
+  </delete>
+
+  <update id="checkOrUncheckProduct" parameterType="map">
+    UPDATE mmall_cart
+    SET checked = #{selected}
+    update_time=now()
+    WHERE user_id=#{userId}
+  </update>
+
+  <update id="checkOrUncheckProductAlone" parameterType="map">
+    UPDATE mmall_cart
+    SET checked = #{selected},
+    update_time=now()
+    WHERE user_id=#{userId}
+    <if test="productId!=null">
+     AND product_id=#{productId}
+    </if>
+  </update>
+
+  <select id="selectCartProductCount" parameterType="Integer">
+    SELECT  IFNULL(SUM(quantity),0) as Count
+    FROM mmall_cart
+    WHERE user_id=#{userId};
+  </select>
 </mapper>
